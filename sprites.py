@@ -74,41 +74,124 @@ class Aki(Agent):
     def get_agent_path(self, game_map, goal):
         path = []
         stack = [game_map[self.row][self.col]]
+
         while True:
             tile = stack.pop()
             row = tile.row
             col = tile.col
             tiles = []
+
             # West
-            if col > 0:
-                if game_map[row][col - 1] not in path:
-                    tiles.append(game_map[row][col - 1])  
+            if col > 0 and game_map[row][col - 1] not in path:
+                tiles.append(game_map[row][col - 1])  
+
             # South
-            if row < len(game_map) - 1:
-                if game_map[row + 1][col] not in path:
-                    tiles.append(game_map[row + 1][col])
+            if row < len(game_map) - 1 and game_map[row + 1][col] not in path:
+                tiles.append(game_map[row + 1][col])
+
             # East
-            if col < len(game_map[0]) - 1:
-                if game_map[row][col + 1] not in path:
-                    tiles.append(game_map[row][col + 1])
+            if col < len(game_map[0]) - 1 and game_map[row][col + 1] not in path:
+                 tiles.append(game_map[row][col + 1])
+
             # North
-            if row > 0:
-                if game_map[row - 1][col] not in path:
-                    tiles.append(game_map[row - 1][col])
+            if row > 0 and game_map[row - 1][col] not in path:
+                tiles.append(game_map[row - 1][col])
+
             tiles.sort(key = lambda x: x.cost(), reverse=True)
             stack += tiles
             path.append(game_map[row][col])
             if row == goal[0] and col == goal[1]:
                 break
+
         return path
 
 
+# Breadth First Search
 class Jocke(Agent):
     def __init__(self, row, col, file_name):
         super().__init__(row, col, file_name)
 
     def get_agent_path(self, game_map, goal):
-        path = [game_map[self.row][self.col]]
+        queue = [[game_map[self.row][self.col], 0]]
+        while True:
+            tile = queue.pop(0)
+            row = tile[0].row
+            col = tile[0].col
+            tiles = []
+            current = tile
+            path = []
+            while True:
+                path.append(current[0])
+                if current[1] == 0:
+                    break
+                current = current[1]
+            path.reverse()
+            # North
+            if row > 0 and game_map[row - 1][col] not in path:
+                north = i = 0
+                if col > 0:
+                    north += game_map[row - 1][col - 1].cost()
+                    i += 1
+                if col < len(game_map[0]) - 1:
+                    north += game_map[row - 1][col + 1].cost()
+                    i += 1
+                if row > 1:
+                    north += game_map[row - 2][col].cost()
+                    i += 1
+                north /= i
+                tiles.append([north, game_map[row - 1][col]])
+            
+            # East
+            if col < len(game_map[0]) - 1 and game_map[row][col + 1] not in path:
+                east = i = 0
+                if row > 0:
+                    east += game_map[row - 1][col + 1].cost()
+                    i += 1
+                if row < len(game_map) - 1:
+                    east += game_map[row + 1][col + 1].cost()
+                    i += 1
+                if col < len(game_map[0]) - 2:
+                    east += game_map[row][col + 2].cost()
+                    i += 1
+                east /= i
+                tiles.append([east, game_map[row][col + 1]])
+
+            # South
+            if row < len(game_map) - 1 and game_map[row + 1][col] not in path:
+                south = i = 0
+                if col > 0:
+                    south += game_map[row + 1][col - 1].cost()
+                    i += 1
+                if col < len(game_map[0]) - 1:
+                    south += game_map[row + 1][col + 1].cost()
+                    i += 1
+                if row < len(game_map) - 2:
+                    south += game_map[row + 2][col].cost()
+                    i += 1
+                south /= i
+                tiles.append([south, game_map[row + 1][col]])
+
+            # West
+            if col > 0 and game_map[row][col - 1] not in path:
+                west = i = 0
+                if row > 0:
+                    west += game_map[row - 1][col - 1].cost()
+                    i += 1
+                if row < len(game_map) - 1:
+                    west += game_map[row + 1][col - 1].cost()
+                    i += 1
+                if col > 1:
+                    west += game_map[row][col - 2].cost()
+                    i += 1
+                west /= i
+                tiles.append([west, game_map[row][col - 1]])
+
+            tiles.sort(key = lambda x: x[0])
+
+            while tiles: 
+                queue.append([tiles.pop(0)[1], tile])
+            if row == goal[0] and col == goal[1]:
+                break
         return path
 
 
