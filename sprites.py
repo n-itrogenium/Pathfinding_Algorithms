@@ -254,13 +254,53 @@ class Draza(Agent):
 
         return returnPath
 
+
 # A* Search
 class Bole(Agent):
     def __init__(self, row, col, file_name):
         super().__init__(row, col, file_name)
 
     def get_agent_path(self, game_map, goal):
-        path = [game_map[self.row][self.col]]
+        queue = [[game_map[self.row][self.col], 0]]
+        while True:
+            tile = queue.pop(0)
+            row = tile[0].row
+            col = tile[0].col
+            tiles = []
+            current = tile
+            path = []
+            while True:
+                path.append(current[0])
+                if current[1] == 0:
+                    break
+                current = current[1]
+            path.reverse()
+            # North
+            if row > 0 and game_map[row - 1][col] not in path:
+                north = (row - 1 - goal[0]) ** 2 + (col - goal[1]) ** 2
+                tiles.append([north, game_map[row - 1][col]])
+            
+            # East
+            if col < len(game_map[0]) - 1 and game_map[row][col + 1] not in path:
+                east = (row - goal[0]) ** 2 + (col + 1 - goal[1]) ** 2
+                tiles.append([east, game_map[row][col + 1]])
+
+            # South
+            if row < len(game_map) - 1 and game_map[row + 1][col] not in path:
+                south = (row + 1 - goal[0]) ** 2 + (col - goal[1]) ** 2
+                tiles.append([south, game_map[row + 1][col]])
+
+            # West
+            if col > 0 and game_map[row][col - 1] not in path:
+                west = (row - goal[0]) ** 2 + (col - 1 - goal[1]) ** 2 
+                tiles.append([west, game_map[row][col - 1]])
+
+            tiles.sort(key = lambda x: (x[1].cost(), x[0]))
+
+            while tiles: 
+                queue.append([tiles.pop(0)[1], tile])
+            if row == goal[0] and col == goal[1]:
+                break
         return path
 
 class Tile(BaseSprite):
