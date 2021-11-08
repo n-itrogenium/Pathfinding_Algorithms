@@ -195,14 +195,60 @@ class Jocke(Agent):
         return path
 
 
+# Branch and Bound Search
 class Draza(Agent):
     def __init__(self, row, col, file_name):
         super().__init__(row, col, file_name)
 
     def get_agent_path(self, game_map, goal):
-        path = [game_map[self.row][self.col]]
-        return path
+        returnPath = []
+        # queue {path, path cost}
+        queue = [[[game_map[self.row][self.col]], game_map[self.row][self.col].cost()]]
+        
+        while True:
+            path = queue.pop()
+            tile = path[0].pop()
+            row = tile.row
+            col = tile.col
+            path[0].append(tile)
+            path_N = path[0].copy()
+            path_E = path[0].copy()
+            path_S = path[0].copy()
+            path_W = path[0].copy()
+            cost_N = cost_E = cost_S = cost_W = path[1]
+            if row == goal[0] and col == goal[1]:
+                returnPath = path[0]
+                break
+            
+            # North
+            if row > 0 and game_map[row - 1][col] not in path_N:
+                path_N.append(game_map[row - 1][col])
+                cost_N += game_map[row - 1][col].cost()
+                queue.append([path_N, cost_N])
 
+            # East
+            if col < len(game_map[0]) - 1 and game_map[row][col + 1] not in path_E:
+                path_E.append(game_map[row][col + 1])
+                cost_E += game_map[row][col + 1].cost()
+                queue.append([path_E, cost_E])
+
+            # South
+            if row < len(game_map) - 1 and game_map[row + 1][col] not in path_S:
+                path_S.append(game_map[row + 1][col])
+                cost_S += game_map[row + 1][col].cost()
+                queue.append([path_S, cost_S])
+
+            # West
+            if col > 0 and game_map[row][col - 1] not in path_W:
+                path_W.append(game_map[row][col - 1])
+                cost_W += game_map[row][col - 1].cost()
+                queue.append([path_W, cost_W])
+
+            queue.sort(key = lambda x: (x[1], len(x[0])), reverse=True)
+
+        return returnPath
+
+# A* Search
 class Bole(Agent):
     def __init__(self, row, col, file_name):
         super().__init__(row, col, file_name)
