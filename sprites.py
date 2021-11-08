@@ -72,14 +72,20 @@ class Aki(Agent):
         super().__init__(row, col, file_name)
 
     def get_agent_path(self, game_map, goal):
-        path = []
-        stack = [game_map[self.row][self.col]]
-
+        stack = [[game_map[self.row][self.col], 0]]
         while True:
             tile = stack.pop()
-            row = tile.row
-            col = tile.col
+            row = tile[0].row
+            col = tile[0].col
             tiles = []
+            current = tile
+            path = []
+            while True:
+                path.append(current[0])
+                if current[1] == 0:
+                    break
+                current = current[1]
+            path.reverse()
 
             # West
             if col > 0 and game_map[row][col - 1] not in path:
@@ -98,8 +104,8 @@ class Aki(Agent):
                 tiles.append(game_map[row - 1][col])
 
             tiles.sort(key = lambda x: x.cost(), reverse=True)
-            stack += tiles
-            path.append(game_map[row][col])
+            while tiles:
+                stack.append([tiles.pop(0), tile])
             if row == goal[0] and col == goal[1]:
                 break
 
